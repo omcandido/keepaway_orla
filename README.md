@@ -26,7 +26,8 @@ You can run the keepaway library in one of the 7 runMode.sh files ``./runMode.sh
 - oLearning.sh: takers are being trained via ORLA (requires ORLA to connect via sockets to send the start signal. The takers read ~/ORLA/ordering.txt containing the values corresponding to the current episode)
 - oTrained.sh: takers follow the values learned by ORLA (in ~/ORLA/ordering.txt) but it does not wait for the start signal and it does not terminate the match early if the same keeper has been holding the ball for more than 10s) 
 
-
+_____
+### ORIGINAL README:
 This project is intended as a public but unofficial repository for updates to
 the Keepaway benchmark player framework created at UT Austin by Gregory
 Kuhlmann and Peter Stone.
