@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-# keepaway_dir="$HOME/Part-III-Project/robocup/keepaway"
-keepaway_dir="$HOME/robocup/keepaway"
+# keepaway_dir="$HOME/Part-III-Project/robocup/keepaway_orla"
+keepaway_dir="$HOME/robocup/keepaway_orla"
 client_dir=$keepaway_dir/player   # directory containing player binary
 client=keepaway_player            # name of player binary
 weight_dir="$keepaway_dir/weights"  # top-level weight directory

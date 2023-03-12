@@ -6,8 +6,8 @@
 #
 
 # Top-level keepaway directory
-#keepaway_dir="$HOME/Part-III-Project/robocup/keepaway"
-keepaway_dir="$HOME/robocup/keepaway"
+#keepaway_dir="$HOME/Part-III-Project/robocup/keepaway_orla"
+keepaway_dir="$HOME/robocup/keepaway_orla"
 # Top-level rcssjava directory ** SET THIS OPTION **
 #rcssjava_dir="/home/dmitrykazhdan/rcssjava-0.1"
 
