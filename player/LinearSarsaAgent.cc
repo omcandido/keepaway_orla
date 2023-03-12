@@ -55,11 +55,14 @@ long* loadColTabHeader(collision_table* colTab, double* weights) {
 
 extern LoggerDraw LogDraw;
 
-LinearSarsaAgent::LinearSarsaAgent( int numFeatures, int numActions, bool bLearn,
+LinearSarsaAgent::LinearSarsaAgent( int guid, int numFeatures, int numActions, bool bLearn,
                                     double widths[],
                                     char *loadWeightsFile, char *saveWeightsFile, bool hiveMind ):
   SMDPAgent( numFeatures, numActions ), hiveFile(-1)
 {
+
+  agentID = guid; 
+
   bLearning = bLearn;
 
   for ( int i = 0; i < getNumFeatures(); i++ ) {
@@ -81,9 +84,11 @@ LinearSarsaAgent::LinearSarsaAgent( int numFeatures, int numActions, bool bLearn
   }
 
   alpha = 0.125;
-  gamma = 1.0;
-  lambda = 0;
+  minAlpha = 0.125/10;
+  gamma = 0.99;
+  lambda = 0.2;
   epsilon = 0.01;
+  minEpsilon = 0.01;
   minimumTrace = 0.01;
 
   epochNum = 0;
@@ -119,8 +124,17 @@ void LinearSarsaAgent::setEpsilon(double epsilon) {
   this->epsilon = epsilon;
 }
 
+void LinearSarsaAgent::setExploitation() {
+  this->epsilon = 0;
+  this->minEpsilon = 0;
+  this->alpha = 0;
+  this->minAlpha = 0;
+  this->gamma = 1;
+}
+
 int LinearSarsaAgent::startEpisode( double state[] )
 {
+
   if (hiveMind) loadColTabHeader(colTab, weights);
   epochNum++;
   decayTraces( 0 );
@@ -129,6 +143,8 @@ int LinearSarsaAgent::startEpisode( double state[] )
     Q[ a ] = computeQ( a );
   }
 
+  phi = 0.9;
+  // PotentialGenerator::getPotential(agentID, state, currentPotentialTable);
   lastAction = selectAction();
 
   char buffer[128];
@@ -143,10 +159,13 @@ int LinearSarsaAgent::startEpisode( double state[] )
   return lastAction;
 }
 
+
 int LinearSarsaAgent::step( double reward, double state[] )
 {
   if (hiveMind) loadColTabHeader(colTab, weights);
-  double delta = reward - Q[ lastAction ];
+
+  double delta = reward - Q[ lastAction ]; // - currentPotentialTable[lastAction];
+  
   loadTiles( state );
   for ( int a = 0; a < getNumActions(); a++ ) {
     Q[ a ] = computeQ( a );
@@ -169,7 +188,8 @@ int LinearSarsaAgent::step( double reward, double state[] )
                    buffer,
                    1, COLOR_NAVY );
 
-  delta += Q[ lastAction ];
+  delta += Q[ lastAction ]; //  + currentPotentialTable[ lastAction ];
+
   updateWeights( delta );
   Q[ lastAction ] = computeQ( lastAction ); // need to redo because weights changed
   decayTraces( gamma * lambda );
@@ -187,6 +207,8 @@ int LinearSarsaAgent::step( double reward, double state[] )
   return lastAction;
 }
 
+
+
 void LinearSarsaAgent::endEpisode( double reward )
 {
   if (hiveMind) loadColTabHeader(colTab, weights);
@@ -201,17 +223,27 @@ void LinearSarsaAgent::endEpisode( double reward )
     /* assuming gamma = 1  -- if not,error*/
     if ( gamma != 1.0)
       cerr << "We're assuming gamma's 1" << endl;
-    double delta = reward - Q[ lastAction ];
+    double delta = reward - Q[ lastAction ]; // - currentPotentialTable[ lastAction ];
     updateWeights( delta );
     // TODO Actually, there's still possibly risk for trouble here with multiple
     // TODO players stomping each other. Is this okay?
     // TODO The weight updates themselves are in order.
   }
-  if ( bLearning && bSaveWeights && rand() % 200 == 0 && !hiveMind ) {
+  if ( bLearning && bSaveWeights && (rand() % 200 == 0) && !hiveMind ) {
     saveWeights( weightsFile );
   }
   if (hiveMind) saveWeights(weightsFile);
   lastAction = -1;
+
+  const float decayAlpha = 0.9995;
+
+
+  // Decay
+  alpha = (alpha * decayAlpha > minAlpha) ? alpha * decayAlpha : minAlpha;
+  // epsilon = (epsilon * 0.9995 > minEpsilon) ? epsilon * 0.9995 : minEpsilon;
+  
+  // epsilon = epsilon * 0.95;
+  // alpha = alpha * 0.95;
 }
 
 void LinearSarsaAgent::shutDown()
@@ -236,6 +268,9 @@ void LinearSarsaAgent::shutDown()
     colTab->data = new long[colTab->m];
   }
 }
+
+
+
 
 int LinearSarsaAgent::selectAction()
 {
@@ -373,10 +408,10 @@ double LinearSarsaAgent::computeQ( int a )
 int LinearSarsaAgent::argmaxQ()
 {
   int bestAction = 0;
-  double bestValue = Q[ bestAction ];
+  double bestValue = Q[ bestAction ]; //  + currentPotentialTable[ bestAction ];
   int numTies = 0;
   for ( int a = bestAction + 1; a < getNumActions(); a++ ) {
-    double value = Q[ a ];
+    double value = Q[ a ]; // + currentPotentialTable[ a ];
     if ( value > bestValue ) {
       bestValue = value;
       bestAction = a;
@@ -492,3 +527,11 @@ void LinearSarsaAgent::setParams(int iCutoffEpisodes, int iStopLearningEpisodes)
 {
   /* set learning parameters */
 }
+
+
+int LinearSarsaAgent::getAgentID() {
+    return agentID;
+}
+
+
+

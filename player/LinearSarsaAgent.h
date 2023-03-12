@@ -21,11 +21,17 @@ class LinearSarsaAgent:public SMDPAgent
   
   int epochNum;
   int lastAction;
+  double phi;
+  double currentPotentialTable[MAX_ACTIONS];
+
 
   double alpha;
   double gamma;
   double lambda;
   double epsilon;
+
+  double minEpsilon;
+  double minAlpha;
 
   double tileWidths[ MAX_STATE_VARS ];
   double Q[ MAX_ACTIONS ];
@@ -50,6 +56,7 @@ class LinearSarsaAgent:public SMDPAgent
 
   // Value function methods for CMACs
   int  selectAction();
+  int selectAction_PR(double state[]);
   void initializeTileWidths( int numK, int numT );
   double computeQ( int a );
   int  argmaxQ();
@@ -64,7 +71,8 @@ class LinearSarsaAgent:public SMDPAgent
   void increaseMinTrace();
 
  public:
-  LinearSarsaAgent                  ( int    numFeatures,
+  LinearSarsaAgent                  ( int    guid,
+                                      int    numFeatures,
                                       int    numActions,
                                       bool   bLearn,
                                       double widths[],
@@ -75,6 +83,7 @@ class LinearSarsaAgent:public SMDPAgent
   // Support for extra modes and/or analysis.
   double getQ(int action);
   void setEpsilon(double epsilon);
+  void setExploitation();
 
   // SMDP Sarsa implementation
   int  startEpisode( double state[] );
@@ -82,6 +91,11 @@ class LinearSarsaAgent:public SMDPAgent
   void endEpisode( double reward );
   void setParams(int iCutoffEpisodes, int iStopLearningEpisodes);
   void shutDown();
+  int getAgentID();
+
+private:
+   int agentID;
+
 } ;
 
 #endif

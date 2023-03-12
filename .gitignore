@@ -1,9 +1,0 @@
-*.o
-*.pyc
-/logs/
-/player/demo_extension.so
-/player/keepaway_player
-/player/Makefile.bak
-/tools/hist
-/tools/kwyzipper
-/tools/winsum

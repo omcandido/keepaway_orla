@@ -33,17 +33,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Parse.h"
 #include "SayMsgEncoder.h"
 #include <cstring>
+#include "KeeperStateCopy.h"
+#include "Analysis.h"
+#include <chrono>
 
 extern LoggerDraw LogDraw;
 
 KeepawayPlayer::KeepawayPlayer( SMDPAgent* sa, ActHandler* act, WorldModel *wm, 
                                 ServerSettings *ss, PlayerSettings *ps,
                                 char* strTeamName, int iNumKeepers, int iNumTakers,
-                                double dVersion, int iReconnect )
+                                double dVersion, int iReconnect, string takerMode )
 
 {
   char str[MAX_MSG];
-  
+  _takerMode    = takerMode;
   SA            = sa;
   ACT           = act;
   WM            = wm;
@@ -65,6 +68,9 @@ KeepawayPlayer::KeepawayPlayer( SMDPAgent* sa, ActHandler* act, WorldModel *wm,
     sprintf( str, "(init %s (version %f))", strTeamName, dVersion );
   ACT->sendMessage( str );
   
+  if ( WM->getSide() == SIDE_RIGHT ) {
+    cout << ">>> Current takerMode: " << _takerMode << endl;
+  }
 }
 
 /*! This is the main loop of the agent. This method calls the update methods
@@ -81,6 +87,7 @@ void KeepawayPlayer::mainLoop( )
     bContLoop =  false;
 
   while( bContLoop )                                 // as long as server alive
+  // while( bContLoop and Analysis::numEpisodes <1000 )                                 // as long as server alive
   {
     Log.logWithTime( 3, "  start update_all" );
     Log.setHeader( WM->getCurrentCycle() );
@@ -91,11 +98,25 @@ void KeepawayPlayer::mainLoop( )
       timer.restartTime();
       SoccerCommand soc;
 
-      if ( WM->getSide() == SIDE_LEFT )
+      if ( WM->getSide() == SIDE_LEFT ) {
         soc = keeper();
-      else
-        soc = taker();
+      } else {
 
+        if (_takerMode == "handcrafted"){
+          soc = taker();
+        } else if (_takerMode == "sarsa"){
+          soc = learning_taker();
+        } else if (_takerMode == "extracted"){
+          soc = argumentation_taker();
+        } else if (_takerMode == "default"){
+          soc = argumentation_taker();
+        } else if (_takerMode == "orla"){
+          soc = argumentation_taker();
+        } else {
+          cout << "Error: Invalid takerMode: " << _takerMode << endl;
+        }
+      }
+            
       if( shallISaySomething() == true )           // shall I communicate
         {
           m_timeLastSay = WM->getCurrentTime();
@@ -169,13 +190,19 @@ void KeepawayPlayer::mainLoop( )
   // shutdown, print hole and number of players seen statistics
   SA->shutDown();
   printf("Shutting down player %d\n", WM->getPlayerNumber() );
-  printf("   Number of holes: %d (%f)\n", WM->iNrHoles,
-                         ((double)WM->iNrHoles/WM->getCurrentCycle())*100 );
-  printf("   Teammates seen: %d (%f)\n", WM->iNrTeammatesSeen,
-                         ((double)WM->iNrTeammatesSeen/WM->getCurrentCycle()));
-  printf("   Opponents seen: %d (%f)\n", WM->iNrOpponentsSeen,
-                         ((double)WM->iNrOpponentsSeen/WM->getCurrentCycle()));
+  // printf("   Number of holes: %d (%f)\n", WM->iNrHoles,
+  //                        ((double)WM->iNrHoles/WM->getCurrentCycle())*100 );
+  // printf("   Teammates seen: %d (%f)\n", WM->iNrTeammatesSeen,
+  //                        ((double)WM->iNrTeammatesSeen/WM->getCurrentCycle()));
+  // printf("   Opponents seen: %d (%f)\n", WM->iNrOpponentsSeen,
+  //                        ((double)WM->iNrOpponentsSeen/WM->getCurrentCycle()));
+  
 
+  if (WM->getSide() == SIDE_RIGHT) {
+    double matchRatio = Analysis::numMatches / (Analysis::numMatches + Analysis::numMismatches) * 100.0;
+    cout << "Agent " << Analysis::agentID << " matches: " << matchRatio << 
+    " episodes: " << Analysis::numEpisodes << endl;
+  }
 }
 
 
@@ -452,6 +479,9 @@ ObjectT KeepawayPlayer::chooseLookObject( double ballThr )
 
 SoccerCommand KeepawayPlayer::taker()
 {
+
+  // cout << "-- HANDCRAFTED TAKER! -- \n";
+
   SoccerCommand soc;
 
   LogDraw.logCircle( "ball pos", WM->getBallPos(),
@@ -504,5 +534,259 @@ SoccerCommand KeepawayPlayer::taker()
   // Otherwise try to intercept the ball
   ACT->putCommandInQueue( soc = intercept( false ) );
   ACT->putCommandInQueue( turnNeckToObject( OBJECT_BALL, soc ) );
+  return soc;
+}
+
+
+
+SoccerCommand KeepawayPlayer::argumentation_taker() 
+{
+
+  // cout << "-- ARGUMENTATION TAKER! -- \n";
+
+  if ( WM->isNewEpisode() ) {
+    SA->endEpisode(0);
+    WM->setNewEpisode( false );
+    WM->setLastAction( UnknownIntValue );
+    m_timeStartEpisode = WM->getCurrentTime();
+    m_lastTarget = OBJECT_BALL;
+
+    Analysis::numEpisodes++;
+    cout << "Episode count: " << Analysis::numEpisodes << endl;
+    double matchRatio = Analysis::numMatches / (Analysis::numMatches + Analysis::numMismatches) * 100.0;
+    cout << "Agent " << Analysis::agentID << " matchRatio: " << matchRatio << 
+    " episodes: " << Analysis::numEpisodes << endl;
+
+    // cout <<"numMatches: " << Analysis::numMatches <<endl;
+    // cout <<"numMissmatches: " << Analysis::numMismatches <<endl;
+
+    if (_takerMode == "orla"){
+      // update here the ordering.
+      string pathOrdering = "/home/candido/robocup/ORLA/ordering.txt";
+      Ordering newOrdering;
+      newOrdering.loadOrdering(pathOrdering);
+      Analysis::agent->argOrdering = newOrdering;
+    }
+  }
+
+  SoccerCommand soc;
+
+
+  // If we don't know where the ball is, search for it.
+  if ( WM->getConfidence( OBJECT_BALL ) <
+       PS->getBallConfThr() ) {
+    ACT->putCommandInQueue( soc = searchBall() );
+    ACT->putCommandInQueue( alignNeckWithBody() );
+    return soc;
+  }
+
+  // Maintain possession if you have the ball.
+  if ( WM->isBallKickable() &&
+       WM->getClosestInSetTo( OBJECT_SET_TEAMMATES, OBJECT_BALL) ==
+       WM->getAgentObjectType() ) {
+    ACT->putCommandInQueue( soc = holdBall( 0.3 ) );
+    return soc;
+  } 
+
+  int n_cycles = 5; 
+  int action = -1;
+  double state[ MAX_STATE_VARS ];
+
+
+  ObjectT me = WM->getAgentObjectType();
+
+
+  if (WM->takerStateVars(me, state) > 0) {
+
+        vector<double> outputs;
+        vector<double> inputState;
+
+        for (int i = 0; i < Analysis::n_taker_features; i++) {
+          inputState.push_back(state[i]);
+        }
+
+
+        // auto start = std::chrono::high_resolution_clock::now();
+
+        Analysis::agent->processState(inputState, outputs);
+
+        // std::cout << " -- START ";
+        // for (auto i: outputs)
+        //   std::cout << i << ' ';
+        // std::cout << " FINISH -- ";
+
+      // auto finish = std::chrono::high_resolution_clock::now();
+      // std::chrono::duration<double> elapsed = finish - start;
+      // std::cout << "Elapsed time: " << elapsed.count() * 1000.0 << " s\n";
+
+        action = outputs.at(0);
+
+        // Check matches (for some reason, the MARLeME implementation ignores the initial action, and so do I):
+        if (WM->getTimeLastAction() <= WM->getCurrentCycle() - n_cycles) {
+          int original_action = SA->step(0, state); 
+
+          int arg_action = (action < 0) ? Analysis::prevAction : action;
+
+          if (arg_action == original_action){
+            Analysis::numMatches++;
+          } else {
+            Analysis::numMismatches++;
+          }
+
+          Analysis::prevAction = arg_action;
+        }
+
+        WM->setLastAction(action);
+
+        if (action < 0) {
+          return repeatLastTakerAction();
+        }  
+    } else {
+        return repeatLastTakerAction();
+    }
+  return interpretTakerAction(action);
+}
+
+
+
+// Note: actions are zero-based (i.e. action 0 means 'tackle ball holder'
+SoccerCommand KeepawayPlayer::learning_taker()
+{    
+
+  // cout << "-- LEARNING TAKER! -- \n";
+
+  if ( WM->isNewEpisode() ) {
+    SA->endEpisode(0);
+    WM->setNewEpisode( false );
+    WM->setLastAction( UnknownIntValue );
+    m_timeStartEpisode = WM->getCurrentTime();
+    m_lastTarget = OBJECT_BALL;
+
+    Analysis::numEpisodes++;
+    cout << "Episode count: " << Analysis::numEpisodes << endl;
+    double matchRatio = Analysis::numMatches / (Analysis::numMatches + Analysis::numMismatches) * 100.0;
+    cout << "Agent " << Analysis::agentID << " matches: " << matchRatio << 
+    " episodes: " << Analysis::numEpisodes << endl;
+  }  
+    
+
+  SoccerCommand soc;
+  
+  // If we don't know where the ball is, search for it.
+  if ( WM->getConfidence( OBJECT_BALL ) <
+       PS->getBallConfThr() ) {
+    ACT->putCommandInQueue( soc = searchBall() );
+    ACT->putCommandInQueue( alignNeckWithBody() );
+    return soc;
+  }
+
+  // Maintain possession if you have the ball.
+  if ( WM->isBallKickable() &&
+       WM->getClosestInSetTo( OBJECT_SET_TEAMMATES, OBJECT_BALL) ==
+       WM->getAgentObjectType() ) {
+    ACT->putCommandInQueue( soc = holdBall( 0.3 ) );
+    return soc;
+  } 
+
+  
+  int n_cycles = 5; 
+  double taker_reward = -5;
+  double state[ MAX_STATE_VARS ];
+  int action = 0;
+  
+  ObjectT me = WM->getAgentObjectType();
+  
+    if ((WM->takerStateVars(me, state) > 0)) {
+
+        vector<double> outputs;
+        vector<double> inputState;
+
+        for (int i = 0; i < Analysis::n_taker_features; i++) {
+          inputState.push_back(state[i]);
+        }
+
+        Analysis::agent->processState(inputState, outputs);
+
+        int chosenAction = outputs.at(0);
+
+
+        if (WM->getTimeLastAction() == UnknownTime) { // If the episode just started
+            action = SA->startEpisode(state);
+            
+        } else if (WM->getTimeLastAction() <= WM->getCurrentCycle() - n_cycles) {
+            action = SA->step(taker_reward, state); 
+
+            Analysis::saveState(state, Analysis::agentID);
+            Analysis::saveAction(action, Analysis::agentID);
+
+            // if (Analysis::agentID == 2 && chosenAction != action) {
+            //   cout << "True action: " << action << 
+            //   " Chosen action: " << chosenAction << endl;
+            // }
+
+            if (chosenAction < 0) {
+              chosenAction = Analysis::prevAction;
+            }
+
+            if (chosenAction == action){
+              Analysis::numMatches++;
+            } else {
+              Analysis::numMismatches++;
+            }
+
+            Analysis::prevAction = chosenAction;
+                         
+        } else {
+            return repeatLastTakerAction();    
+        }
+        WM->setLastAction(action);
+        
+    } else {
+        return repeatLastTakerAction();
+    }
+    return interpretTakerAction(action);
+}
+
+
+SoccerCommand KeepawayPlayer::repeatLastTakerAction()
+{
+   SoccerCommand soc;
+
+   if (m_lastTarget == OBJECT_BALL) {
+      ACT->putCommandInQueue( soc = intercept( false ) );
+   } else {
+      ACT->putCommandInQueue( soc = mark( m_lastTarget, 4.0,  MARK_BALL) );
+   }
+   ACT->putCommandInQueue( turnNeckToObject( OBJECT_BALL, soc ) );
+
+   return soc;
+}
+
+
+SoccerCommand KeepawayPlayer::interpretTakerAction( int action )
+{
+  SoccerCommand soc;
+  
+  if ( action == 0 ) { // interpret TackleBall() action
+    m_lastTarget = OBJECT_BALL;
+    ACT->putCommandInQueue( soc = intercept( false ) );
+    ACT->putCommandInQueue( turnNeckToObject( OBJECT_BALL, soc ) );
+
+  } else { // interpret MarkKeeper() (aka BlockPass()) action
+      
+    // Order keepers by their distance to the ball 
+    int numK = WM->getNumKeepers();
+    ObjectT K[ numK ];
+
+    for ( int i = 0; i < numK; i++ ) {
+      K[ i ] = SoccerTypes::getOpponentObjectFromIndex( i );
+    }
+    WM->sortClosestTo( K, numK, OBJECT_BALL );  
+    
+    // Issue corresponding command
+    m_lastTarget = K[action];
+    ACT->putCommandInQueue( soc = mark( K[action], 4.0,  MARK_BALL) );
+    ACT->putCommandInQueue( turnNeckToObject( OBJECT_BALL, soc ) );
+  }
   return soc;
 }

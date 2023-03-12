@@ -44,7 +44,10 @@ class KeepawayPlayer:public BasicPlayer
 
   Time          m_timeLastSay;           /*!< last time communicated         */
   Time          m_timeStartEpisode;
+  ObjectT       m_lastTarget;
   SMDPAgent     *SA;
+
+  string          _takerMode;
 
   // methods associated with saying (defined in KeepawayPlayer.cc)
   bool          shallISaySomething        (                                  );
@@ -61,7 +64,8 @@ class KeepawayPlayer:public BasicPlayer
 					    int            iNumKeepers,
 					    int            iNumTakers,
                                             double         dVersion,
-                                            int            iReconnect = -1   );
+                                            int            iReconnect = -1,
+                                            string         takerMode = "handcrafted" );
 
   void          mainLoop                  (                                  );
 
@@ -74,7 +78,10 @@ class KeepawayPlayer:public BasicPlayer
   ObjectT chooseLookObject( double ballThr );
 
   SoccerCommand taker();
-
+  SoccerCommand learning_taker();
+  SoccerCommand argumentation_taker();
+  SoccerCommand interpretTakerAction( int action );
+  SoccerCommand repeatLastTakerAction();
 };
 
 #endif

@@ -882,7 +882,9 @@ public:
   int           getTimeLastAction          (                                 );
 
   double        keeperReward               (                                 );
+  int           keeperStateVarsForTaker    ( double         state[]          );
   int           keeperStateVars            ( double         state[]          );
+  int           takerStateVars             ( ObjectT me,    double         state[]          );
   int           keeperStateRangesAndResolutions ( double         ranges[],
 					     double         minValues[],
 					     double         resolutions[],
@@ -893,7 +895,17 @@ public:
 					     int            numK,
 					     int            numT             );
   */
+  
+  /*
+   Method using taker state definition from 'Argumentation Accelerated Reinforcement Learning'
+   */
+  int           takerStateRangesAndResolutions ( double         ranges[],
+					     double         minValues[],
+					     double         resolutions[],
+					     int            numK,
+					     int            numT             );
 
+  
   void          setMoveSpeed               ( double         speed            );
   double        getMoveSpeed               (                                 );
 

@@ -110,7 +110,7 @@ int HandCodedAgent::handCoded( double state[] )
     nearest_Opp_ang_K[ i ] = state[ j++ ];
 
   // If there are no opponents within 5m, then hold
-  if ( WB_dist_to_T[ 0 ] > 5 )
+  if ( WB_dist_to_T[ 0 ] > 10 )
     return 0;
 
   float scores[ numK ];
