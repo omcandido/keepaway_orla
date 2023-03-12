@@ -14,12 +14,12 @@ using namespace std;
 
 int main( int argc, char* argv[] )
 {            
-    // string data_path = "/home/dmitrykazhdan/Part-III-Project/robocup/keepaway/logs/";
-    string data_path = "/home/candido/robocup/keepaway/logs/";
+    // string data_path = "/home/dmitrykazhdan/Part-III-Project/robocup/keepaway_orla/logs/";
+    string data_path = "/home/candido/robocup/keepaway_orla/logs/";
 
  
-    // string output_filename = "/home/dmitrykazhdan/Part-III-Project/robocup/keepaway/tools/avg.out";
-    string output_filename = "/home/candido/robocup/keepaway/tools/avg.out";
+    // string output_filename = "/home/dmitrykazhdan/Part-III-Project/robocup/keepaway_orla/tools/avg.out";
+    string output_filename = "/home/candido/robocup/keepaway_orla/tools/avg.out";
 
     // Load a set of arguments from files
     DIR* dirp = opendir(data_path.c_str());

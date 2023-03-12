@@ -126,7 +126,7 @@ int main( int argc, char * argv[] )
   int      iMaxLogLevel                      ;
   char     strHost[128]                      = "127.0.0.1";
   // Changes recommended by celibertojr include changing dVersion to 12. See:
-  // https://utlists.utexas.edu/sympa/arc/keepaway/2011-05/msg00006.html
+  // https://utlists.utexas.edu/sympa/arc/keepaway_orla/2011-05/msg00006.html
   double   dVersion                          = 12.0;
   int      iMode                             = 0;
   int      iNr                               = 2;
@@ -484,8 +484,8 @@ unique_ptr<BasicAgentModel> createAgent(int guid, int numTakers, int numKeepers,
     // cout << "-guid: " << guid << "-\n";
 
     // string prefix = "/home/dmitrykazhdan/Desktop/";
-    // prefix = "/home/dk525/Part-III-Project/robocup/keepaway/player/";
-    string prefix = "/home/candido/robocup/keepaway/player/";
+    // prefix = "/home/dk525/Part-III-Project/robocup/keepaway_orla/player/";
+    string prefix = "/home/candido/robocup/keepaway_orla/player/";
 
     vector<int> teamIDs;
     string agentStateFile;
