@@ -1,0 +1,2 @@
+Folder where a list of arguments (0-38) is saved, corresponding to the argument chosen by each argumentation agent.
+This is used for frequency analysis of chosen arguments.
