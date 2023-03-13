@@ -15,6 +15,9 @@ This fork contains files from three different sources:
 - Install as per the original readme file (at the end of this file)
 - To compile the MARLeME model extractor do ``make -f Makeextractor`` from the player/ folder.
 
+## Setup
+The project is not plug-and-play. Many paths are hardcoded, connections are port-/IP-dependent and you may need to do your own adjustments if your setup differs from ours.
+ORLA assumes keepaway and rcssserver are installed in the home directory of a WSL2 (Ubuntu-16.04) system. ORLA runs on the windows host (Windows 10). To maximize your chances of succeeding at getting it to work, it is advisable to use the same setup. After that, you should change the hardcoded home paths (I know, ugliness alert) to your own (i.e., /home/candido/.../ to /home/yourusername/...). Then you can compile the main.cc and extractor.cc and you should be ready to go.
 
 ## Run modes
 You can run the keepaway library in one of the 7 runMode.sh files ``./runMode.sh`` from the root folder. To execute one runMode.sh file you first have to make them executable: ``chmod +x runMode.sh``. The different run modes are:
@@ -25,6 +28,22 @@ You can run the keepaway library in one of the 7 runMode.sh files ``./runMode.sh
 - mExtracted.sh: takers use the VAF extracted by MARLeME (by default the values are in folder ~/keepaway_orla/player/savedOrderings/agent_N.txt)
 - oLearning.sh: takers are being trained via ORLA (requires ORLA to connect via sockets to send the start signal. The takers read ~/keepaway_orla/orla/ordering.txt containing the values corresponding to the current episode)
 - oTrained.sh: takers follow the values learned by ORLA (in ~/keepaway_orla/orla/ordering.txt) but it does not wait for the start signal and it does not terminate the match early if the same keeper has been holding the ball for more than 10s. 
+
+## Learning a model with SARSA
+By running ``./sLearning.sh``, a set of weights will be created by default under ``keepaway_orla/weights/``. When you are happy with the learned models, save the weights under the ``good_weights`` folder to evaluate the learned SARSA models.
+
+## Extracting a model with MARLeME
+Once a list of trajectories has been sampled, you should have a list of actions and states in the folders ``player/savedActions`` and ``player/savedStates``, respectively.
+You can extract a VAF from those trajectories by moving to the player folder and running ``./extractor``. The extracted ordering will be output to player/savedOrderings by default.
+
+## Learning a model with ORLA
+By running ``./oLearning.sh``, the keepaway referee will wait for ORLA to send a start signal. Upon receiving the start signal, the argumentation-based takers read the values of their arguments from ``keepaway_orla/orla/ordering.txt``. When you are happy with the learned values, run ``./oTrained`` to evaluate them without the need for running ORLA.
+
+## Permission issues
+Note that you might need to run some of the commands above as sudo, depending on the file permissions you have.
+
+##
+
 
 _____
 ### ORIGINAL README:
