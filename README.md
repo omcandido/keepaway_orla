@@ -1,3 +1,33 @@
+# Keepaway for [ORLA](https://github.com/omcandido/ORLA)
+
+This fork contains files from three different sources: 
+1. the original Keepaway library: https://www.cs.utexas.edu/~AustinVilla/sim/keepaway/
+2. the original repository: https://github.com/tjpalmer/keepaway
+3. ad-hoc files for the MARLeME library: https://github.com/dmitrykazhdan/MARLeME
+
+## Requirements
+- rcssserver for ORLA: https://github.com/omcandido/rcssserver_orla
+- WSL Ubuntu-16.04
+- C++14
+
+## Install
+- Clone keepaway_orla in the home directory (i.e., "/home/username").
+- Install as per the original readme file (at the end of this file)
+- To compile the MARLeME model extractor do ``make -f Makeextractor`` from the player/ folder.
+
+
+## Run modes
+You can run the keepaway library in one of the 7 runMode.sh files ``./runMode.sh`` from the root folder. To execute one runMode.sh file you first have to make them executable: ``chmod +x runMode.sh``. The different run modes are:
+- handcrafted.sh: takers follow a handcrafted strategy
+- sLearning.sh: takers learn using linear SARSA
+- sTrained.sh: takers follow the learned SARSA policy (by default, the weights are in ~/keepaway_orla/weights/good_weights)
+- mDefault.sh: takers use the default VAF given by the expert (see [Gao & Toni 2014](https://link.springer.com/chapter/10.1007/978-3-642-54373-9_6))
+- mExtracted.sh: takers use the VAF extracted by MARLeME (by default the values are in folder ~/keepaway_orla/player/savedOrderings/agent_N.txt)
+- oLearning.sh: takers are being trained via ORLA (requires ORLA to connect via sockets to send the start signal. The takers read ~/ORLA/ordering.txt containing the values corresponding to the current episode)
+- oTrained.sh: takers follow the values learned by ORLA (in ~/ORLA/ordering.txt) but it does not wait for the start signal and it does not terminate the match early if the same keeper has been holding the ball for more than 10s) 
+
+_____
+### ORIGINAL README:
 This project is intended as a public but unofficial repository for updates to
 the Keepaway benchmark player framework created at UT Austin by Gregory
 Kuhlmann and Peter Stone.
