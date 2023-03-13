@@ -562,7 +562,7 @@ SoccerCommand KeepawayPlayer::argumentation_taker()
 
     if (_takerMode == "orla"){
       // update here the ordering.
-      string pathOrdering = "/home/candido/ORLA/ordering.txt";
+      string pathOrdering = "/home/candido/keepaway_orla/player/orla/ordering.txt";
       Ordering newOrdering;
       newOrdering.loadOrdering(pathOrdering);
       Analysis::agent->argOrdering = newOrdering;

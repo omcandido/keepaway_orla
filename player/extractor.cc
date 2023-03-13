@@ -44,11 +44,11 @@ std::unique_ptr<BasicModelExtractor> modelExtractor;
 int main( int argc, char * argv[] )
 {
     for (int i=1; i<numAgents+1; i++){
-        teamCommState.push_back("/home/candido/robocup/keepaway_orla/player/stateComm/agent_" + to_string(i) + ".txt");
-        teamCommArgs.push_back("/home/candido/robocup/keepaway_orla/player/argComm/agent_" + to_string(i) + ".txt");
-        savedOrderings.push_back("/home/candido/robocup/keepaway_orla/player/savedOrderings/agent_" + to_string(i) + ".txt");
-        stateFilePaths.push_back("/home/candido/robocup/keepaway_orla/player/savedStates/sarsa_trained/agent_" + to_string(i) + ".txt");
-        actionFilePaths.push_back("/home/candido/robocup/keepaway_orla/player/savedActions/sarsa_trained/agent_" + to_string(i) + ".txt");
+        teamCommState.push_back("/home/candido/keepaway_orla/player/stateComm/agent_" + to_string(i) + ".txt");
+        teamCommArgs.push_back("/home/candido/keepaway_orla/player/argComm/agent_" + to_string(i) + ".txt");
+        savedOrderings.push_back("/home/candido/keepaway_orla/player/savedOrderings/agent_" + to_string(i) + ".txt");
+        stateFilePaths.push_back("/home/candido/keepaway_orla/player/savedStates/sarsa_trained/agent_" + to_string(i) + ".txt");
+        actionFilePaths.push_back("/home/candido/keepaway_orla/player/savedActions/sarsa_trained/agent_" + to_string(i) + ".txt");
     }
 
     // Create all arguments.

@@ -124,7 +124,7 @@ int BasicAgentModel::getActionFromGE(int defaultAction,  set<int> &groundedExten
         if (actionArgsTable.at(recArgID)->getAgentID() == agentID) {
 
             // ORLA: log which argument is used during the matches.
-            ofstream myFile("/home/candido/robocup/keepaway_orla/player/actionsTaken/actionsTaken.txt", std::ios_base::app);
+            ofstream myFile("/home/candido/keepaway_orla/player/actionsTaken/actionsTaken.txt", std::ios_base::app);
             myFile << recArgID << "\n";
             myFile.close();
 

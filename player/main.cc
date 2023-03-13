@@ -485,7 +485,7 @@ unique_ptr<BasicAgentModel> createAgent(int guid, int numTakers, int numKeepers,
 
     // string prefix = "/home/dmitrykazhdan/Desktop/";
     // prefix = "/home/dk525/Part-III-Project/keepaway_orla/player/";
-    string prefix = "/home/candido/robocup/keepaway_orla/player/";
+    string prefix = "/home/candido/keepaway_orla/player/";
 
     vector<int> teamIDs;
     string agentStateFile;
@@ -577,7 +577,7 @@ unique_ptr<BasicAgentModel> createAgent(int guid, int numTakers, int numKeepers,
       argOrdering.loadOrdering(orderingPath);
     } else if (mode=="orla"){
       cout << "Loading ORLA ordering" <<endl;
-      string pathOrdering = "/home/candido/ORLA/ordering.txt";
+      string pathOrdering = "/home/candido/keepaway_orla/orla/ordering.txt";
       argOrdering.loadOrdering(pathOrdering);
     }
 

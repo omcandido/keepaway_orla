@@ -35,7 +35,7 @@ void Analysis::newEpisode(int agentID) {
 void Analysis::saveAction(int action, int agentID) {
 
     // std::string full_path = "/home/dmitrykazhdan/Part-III-Project/savedActions/agent_" +
-    std::string full_path = "/home/candido/robocup/keepaway_orla/player/savedActions/agent_" +
+    std::string full_path = "/home/candido/keepaway_orla/player/savedActions/agent_" +
     std::to_string(agentID) + ".txt";
 
     std::ofstream file(full_path, std::ios_base::app);
@@ -54,7 +54,7 @@ void Analysis::saveState(double state[], int agentID) {
 
     // std::string full_path = "/home/dmitrykazhdan/Part-III-Project/savedStates/agent_" +
     // std::string full_path = "/home/dmitrykazhdan/project/savedStates/agent_" +
-    std::string full_path = "/home/candido/robocup/keepaway_orla/player/savedStates/agent_" +
+    std::string full_path = "/home/candido/keepaway_orla/player/savedStates/agent_" +
     std::to_string(agentID) + ".txt";
     
     std::ofstream file(full_path, std::ios_base::app);
