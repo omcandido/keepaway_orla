@@ -42,8 +42,11 @@ By running ``./oLearning.sh``, the keepaway referee will wait for ORLA to send a
 ## Permission issues
 Note that you might need to run some of the commands above as sudo, depending on the file permissions you have.
 
-##
+## Connecting a monitor
+If you use Windows as your host, you can connect the [rcssmonitor-16.1.0](https://github.com/rcsoccersim/rcssmonitor/releases/tag/rcssmonitor-16.1.0). To automatically connect to WSL2, I use [this .bat file](https://gist.github.com/omcandido/39bfd86b52b5cb065e67c35b73a81fa3) to launch the rcssmonitor.
 
+## Killing the server
+I use [this script](https://gist.github.com/omcandido/57da322854de7dc35de83d5ee4c1651e) to terminate the server.
 
 _____
 ### ORIGINAL README:
